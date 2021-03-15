@@ -1,6 +1,6 @@
 def sum_even_squares(n: int) -> int:
     result = int()
-    while n:
+    while n > 0:
         n -= 1
         if not n % 2:
             result += n ** 2
@@ -30,7 +30,7 @@ def odd_pair_bf(nums: [int]) -> bool:
 
 def get_list() -> [int]:
     def generate_list(seed: int, gap: int) -> [int]:
-        for x in range(10):
+        for _ in range(10):
             seed += gap
             gap += 2
             yield seed
@@ -69,12 +69,14 @@ def run():
     print()
 
     print('Problem 2(linear)')
-    print(odd_pair_linear(list(map(int, input('please provide a sequence of integer values separated by spaces: ').split()))))
+    print(odd_pair_linear(
+        list(map(int, input('please provide a sequence of integer values separated by spaces: ').split()))))
 
     print()
 
     print('Problem 2(brute-force)')
-    print(odd_pair_bf(list(map(int, input('please provide a sequence of integer values separated by spaces: ').split()))))
+    print(
+        odd_pair_bf(list(map(int, input('please provide a sequence of integer values separated by spaces: ').split()))))
 
     print()
 
