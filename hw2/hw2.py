@@ -93,6 +93,46 @@ def rec_and_iter_test():
     print('total time:', t_ite_total + t_rec_total)
 
 
+def iterative_selection_sort(collection: [int or float]) -> [int or float]:
+    length: int = len(collection)
+
+    for v in range(length - 1):
+        least: int = v
+
+        for k in range(v + 1, length):
+            if collection[k] < collection[least]:
+                least = k
+
+        if least != v:
+            collection[least], collection[v] = (collection[v], collection[least])
+
+    return collection
+
+
+def recursive_selection_sort(collection: [int or float]) -> [int or float]:
+    def find_min_index(_collection: [int or float], a: int, b: int) -> int:
+        if a == b:
+            return a
+
+        k: int = find_min_index(_collection, a + 1, b)
+
+        return a if _collection[a] < _collection[k] else k
+
+    def recursive(_collection: [int or float], length: int, pos: int = 0):
+        if pos == length:
+            return -1
+
+        v: int = find_min_index(_collection, pos, length - 1)
+
+        if v != pos:
+            _collection[pos], _collection[v] = (_collection[v], _collection[pos])
+
+        recursive(_collection, length, pos + 1)
+
+    recursive(collection, len(collection))
+    return collection
+
+
 def run():
     print(recursive_multiplication(2, 5) == 10)
     print(recursive_multiplication(3114, 3114) == 9696996)
@@ -108,8 +148,19 @@ def run():
     print(iterative_multiplication(2, 5) == 10)
     print(iterative_multiplication(8, 9) != 10)
 
-    a = AutoIncreasingInteger()
-    print(a)
-    print(a)
+    import random
 
-    rec_and_iter_test()
+    unsorted = list()
+
+    def generate_random_list(size: int):
+        unsorted.clear()
+        for _ in range(size):
+            random.seed()
+            unsorted.append(random.randrange(-99999, 100000))
+
+    generate_random_list(10000)
+
+    import copy
+
+    print(iterative_selection_sort(copy.deepcopy(unsorted)) == sorted(copy.deepcopy(unsorted)))
+    print(recursive_selection_sort(copy.deepcopy(unsorted)) == sorted(copy.deepcopy(unsorted)))
