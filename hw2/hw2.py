@@ -32,23 +32,7 @@ def iterative_multiplication(m: int, n: int) -> int:
     return result
 
 
-class AutoIncreasingInteger(int):
-    def __init__(self, value: int = 0):
-        super().__init__()
-        self.value = value
-
-    def __repr__(self) -> int:
-        current = self.value
-        self.value += 1
-        return current
-
-    def __str__(self):
-        return str(self.__repr__())
-
-
 def rec_and_iter_test():
-    executions = [recursive_multiplication, iterative_multiplication]
-    execution_index: AutoIncreasingInteger = AutoIncreasingInteger(0)
     execution_data: [tuple[tuple[int, int]]] = (
         ((69, 0), (491, 86), (27, 134), (85, 69), (4, 99)),
         ((0, 9487), (99, 47), (423, 19), (5, 2), (311, 13)),
@@ -57,8 +41,11 @@ def rec_and_iter_test():
         ((9, 987), (29, 41), (323, 59), (4, 88), (111, 11))
     )
 
-    def function(test_number: int):
-        [executions[execution_index](*execution_data[test_number][k % 5]) for k in range(100)]
+    def recursive_test(test_number: int):
+        [recursive_multiplication(*execution_data[test_number][k % 5]) for k in range(100)]
+
+    def iterative_test(test_number: int):
+        [iterative_multiplication(*execution_data[test_number][k % 5]) for k in range(100)]
 
     # ---------------------------------------------------------Method 1
     print()
@@ -72,13 +59,13 @@ def rec_and_iter_test():
 
         t_start = ti.default_timer()
         for i in range(10000):
-            function(c)
+            recursive_test(c)
         tend = ti.default_timer()
         t_rec = tend - t_start
 
         t_start = ti.default_timer()
         for i in range(10000):
-            function(c)
+            iterative_test(c)
         tend = ti.default_timer()
         t_ite = tend - t_start
 
