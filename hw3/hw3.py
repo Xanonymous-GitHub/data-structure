@@ -3,12 +3,12 @@ from string import digits
 
 
 class Term:
-    def __init__(self, coefficient: int, exponent: int):
+    def __init__(self, coefficient: int or float, exponent: int):
         self.__coefficient = coefficient
         self.__exponent = exponent
 
     @property
-    def coefficient(self) -> int:
+    def coefficient(self) -> int or float:
         return self.__coefficient
 
     @property
@@ -22,6 +22,9 @@ class Term:
     def __add__(self, other):
         assert self.__exponent == other.exponent
         return Term(self.__coefficient + other.coefficient, self.__exponent)
+
+    def __mul__(self, other):
+        return Term(self.__coefficient * other.coefficient, self.__exponent + other.exponent)
 
     def __cmp__(self, other):
         return self.__coefficient == other.coefficient and self.__exponent == other.exponent
@@ -53,50 +56,6 @@ class Term:
             coefficient = gap_str = exponent = ''
 
         return coefficient + gap_str + exponent
-
-
-class Polynomial:
-    def __init__(self, terms: Tuple[Term]):
-        self.__terms = terms
-        self.__simplification()
-
-    def __str__(self) -> str:
-        return ''.join(
-            (str(term) if index == 0 else (('+' if term.coefficient > 0 else '') + str(term)))
-            for index, term in enumerate(self.__terms)
-        )
-
-    __repr__ = __str__
-
-    def __simplification(self):
-        term_dict = dict()
-
-        for term in self.__terms:
-            if term.exponent not in term_dict:
-                term_dict[term.exponent] = list()
-            term_dict[term.exponent].append(term)
-
-        for exponent, terms in term_dict.items():
-            merged_term = terms[0]
-            for term in terms[1:]:
-                merged_term += term
-            term_dict[exponent] = merged_term
-
-        self.__terms = sorted(term_dict.values(), key=lambda _term: _term.exponent, reverse=True)
-
-    @property
-    def raw_terms(self) -> Tuple[Term]:
-        return self.__terms
-
-    @property
-    def leading_exponent(self) -> int:
-        return self.__terms[0].exponent
-
-    def __add__(self, other):
-        return Polynomial(tuple([ours for ours in self.__terms] + [his for his in other.raw_terms]))
-
-    def __sub__(self, other):
-        return Polynomial(tuple([ours for ours in self.__terms] + [his.inverse for his in other.raw_terms]))
 
 
 def str_to_terms(polynomial_str: str) -> Tuple[Term]:
@@ -154,9 +113,86 @@ def str_to_terms(polynomial_str: str) -> Tuple[Term]:
     return tuple(terms)
 
 
+class Polynomial:
+    def __init__(self, terms: Tuple[Term] or str):
+        if isinstance(terms, str):
+            self.__terms = str_to_terms(terms)
+        else:
+            self.__terms = terms
+        self.__simplification()
+
+    def __str__(self) -> str:
+        return ''.join(
+            (str(term) if index == 0 else (('+' if term.coefficient > 0 else '') + str(term)))
+            for index, term in enumerate(self.__terms)
+        )
+
+    __repr__ = __str__
+
+    def __simplification(self):
+        term_dict = dict()
+
+        for term in self.__terms:
+            if term.exponent not in term_dict:
+                term_dict[term.exponent] = list()
+            term_dict[term.exponent].append(term)
+
+        for exponent, terms in list(term_dict.items()):
+            merged_term = terms[0]
+            for term in terms[1:]:
+                merged_term += term
+            if merged_term.coefficient == 0:
+                del term_dict[exponent]
+            else:
+                term_dict[exponent] = merged_term
+
+        self.__terms = sorted(term_dict.values(), key=lambda _term: _term.exponent, reverse=True)
+
+    @property
+    def raw_terms(self) -> Tuple[Term]:
+        return self.__terms
+
+    @property
+    def leading_exponent(self) -> int:
+        return self.__terms[0].exponent
+
+    def __add__(self, other):
+        return Polynomial(tuple([ours for ours in self.__terms] + [his for his in other.raw_terms]))
+
+    def __sub__(self, other):
+        return Polynomial(tuple([ours for ours in self.__terms] + [his.inverse for his in other.raw_terms]))
+
+    def __mul__(self, other):
+        results: List[Term] = list()
+        for my_term in self.__terms:
+            for his_term in other.raw_terms:
+                results.append(my_term * his_term)
+
+        return Polynomial(tuple(results))
+
+    def __truediv__(self, other):
+        quotient: List[Term] = list()
+        remainder = self.raw_terms
+
+        while remainder[0].exponent >= other.raw_terms[0].exponent:
+            new_quotient_term = Term(
+                remainder[0].coefficient / other.raw_terms[0].coefficient,
+                remainder[0].exponent - other.raw_terms[0].exponent
+            )
+
+            quotient.append(new_quotient_term)
+            remainder = (Polynomial(tuple(remainder)) - Polynomial(tuple([new_quotient_term])) * other).raw_terms
+
+        return Polynomial(tuple(quotient)), Polynomial(tuple(remainder))
+
+
 def run():
-    a = Polynomial(str_to_terms('3x^8+54'))
-    b = Polynomial(str_to_terms('4x^8+3x^5-12x^5+3x^7-2x^2+54'))
-    print(a)
-    print(b)
-    print(a - b)
+    a = Polynomial('x+2')
+    b = Polynomial('2x^2-3x-1')
+    # 2x^3+x^2-7x-2
+    print('({_a}) x ({_b}) = {ans1}'.format(_a=a, _b=b, ans1=a * b))
+
+    c = Polynomial('40x^3-8x^2-12x-19')
+    d = Polynomial('12x-6')
+    # (3.3333333333333335x^2+x-0.5, -22.0)
+    print('({_c}) x ({_d}) = {ans2}'.format(_c=c, _d=d, ans2=c / d))
