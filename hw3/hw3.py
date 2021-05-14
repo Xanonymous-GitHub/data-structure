@@ -61,34 +61,20 @@ class Polynomial:
     __repr__ = __str__
 
     def __simplification(self):
-        sorted_terms = sorted(self.__terms, key=lambda term: term.exponent, reverse=True)
-        length_of_sorted_terms = len(sorted_terms)
-        sorted_terms.append(Term(0, -2))
+        term_dict = dict()
 
-        simplified_terms: List[Term] = list()
+        for term in self.__terms:
+            if term.exponent not in term_dict:
+                term_dict[term.exponent] = list()
+            term_dict[term.exponent].append(term)
 
-        previous_exponent = -1
-        same_exponent_terms: List[Term] = list()
+        for exponent, terms in term_dict.items():
+            merged_term = terms[0]
+            for term in terms[1:]:
+                merged_term += term
+            term_dict[exponent] = merged_term
 
-        for index, sorted_term in enumerate(sorted_terms):
-
-            if index == length_of_sorted_terms - 1 or \
-                    sorted_term.exponent != previous_exponent and \
-                    len(same_exponent_terms) != 0:
-
-                merged_term = same_exponent_terms[0]
-
-                for same_exponent_term in same_exponent_terms[1:]:
-                    print(same_exponent_term)
-                    merged_term += same_exponent_term
-
-                simplified_terms.append(merged_term)
-                same_exponent_terms.clear()
-
-            same_exponent_terms.append(sorted_term)
-            previous_exponent = sorted_term.exponent
-
-        self.__terms = simplified_terms
+        self.__terms = sorted(term_dict.values(), key=lambda _term: _term.exponent, reverse=True)
 
     @property
     def raw_terms(self) -> Tuple[Term]:
