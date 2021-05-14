@@ -15,6 +15,10 @@ class Term:
     def exponent(self) -> int:
         return self.__exponent
 
+    @property
+    def inverse(self):
+        return Term(-self.__coefficient, self.__exponent)
+
     def __add__(self, other):
         assert self.__exponent == other.exponent
         return Term(self.__coefficient + other.coefficient, self.__exponent)
@@ -26,12 +30,14 @@ class Term:
         if self.__exponent == 0:
             gap_str = ''
             exponent = ''
-            coefficient = str(self.__coefficient) if self.__coefficient > 0 else ''
+            coefficient = str(self.__coefficient) if self.__coefficient != 0 else ''
         elif self.__coefficient and self.__exponent == 1:
             gap_str = 'x'
             exponent = ''
             if self.__coefficient == 1:
                 coefficient = ''
+            elif self.__coefficient == -1:
+                coefficient = '-'
             else:
                 coefficient = str(self.__coefficient)
         elif self.__coefficient:
@@ -39,6 +45,8 @@ class Term:
             exponent = str(self.__exponent)
             if self.__coefficient == 1:
                 coefficient = ''
+            elif self.__coefficient == -1:
+                coefficient = '-'
             else:
                 coefficient = str(self.__coefficient)
         else:
@@ -86,6 +94,9 @@ class Polynomial:
 
     def __add__(self, other):
         return Polynomial(tuple([ours for ours in self.__terms] + [his for his in other.raw_terms]))
+
+    def __sub__(self, other):
+        return Polynomial(tuple([ours for ours in self.__terms] + [his.inverse for his in other.raw_terms]))
 
 
 def str_to_terms(polynomial_str: str) -> Tuple[Term]:
@@ -144,8 +155,8 @@ def str_to_terms(polynomial_str: str) -> Tuple[Term]:
 
 
 def run():
-    a = Polynomial(str_to_terms('-8x^5+3x^7-9x^5+2x^3-4x^1+7x+89'))
-    b = Polynomial(str_to_terms('4x^8+3x^5-12x^5+3x^7-2x^2-77+24+54'))
+    a = Polynomial(str_to_terms('3x^8+54'))
+    b = Polynomial(str_to_terms('4x^8+3x^5-12x^5+3x^7-2x^2+54'))
     print(a)
     print(b)
-    print(a + b)
+    print(a - b)
