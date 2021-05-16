@@ -196,3 +196,5 @@ def run():
     d = Polynomial('12x-6')
     # (3.3333333333333335x^2+x-0.5, -22.0)
     print('({_c}) x ({_d}) = {ans2}'.format(_c=c, _d=d, ans2=c / d))
+
+    print(Polynomial('4x^3-2x+1') - Polynomial('3x^2+x+4'))
